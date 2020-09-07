@@ -1,0 +1,39 @@
+a.	How many orders were shipped by Speedy Express in total?
+b.	What is the last name of the employee with the most orders?
+c.	What product was ordered the most by customers in Germany?
+
+a.	54
+SELECT count(orderid) as order_quantity
+from orders o
+left join shippers s
+on o.shipperid = s.shipperid
+where shippername = "Speedy Express";
+
+b.	Peacock
+select e.lastname, count(o.orderid) as quant
+from employees e
+join orders o
+on e.employeeid = o.employeeid
+group by e.employeeid
+having quant = (select count(orderid) as order_quantatity
+from orders
+group by employeeid
+order by order_quantatity desc
+limit 1);
+
+c.	 Boston Crab Meat
+with quantity as (
+select p.productid, p.productname, sum(od.quantity) as order_quantity
+from products p 
+join orderdetails od
+on p.productid = od.productid
+join orders o
+on o.orderid = od.orderid
+join customers c
+on c.customerid = o.customerid
+where c.country = "Germany"
+group by p.productid)
+
+select productid, productname
+from quantity
+where order_quantity = (select max(order_quantity) from quantity);
